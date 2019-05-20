@@ -5,19 +5,20 @@ import asyncio
 
 # packages import
 from config import *
-from download import download_video
+#from download import download_video
 import logging
-
+from send_data import send_data
+from allocate import Allocate
 
 from concurrent.futures import ProcessPoolExecutor, wait
 from multiprocessing import cpu_count
 logging.basicConfig(level=logging.INFO)
+
 # Bot init
 bot = Bot(token=API_TOKEN, proxy=PROXY, parse_mode='HTML')
 
 # States init
 dp = Dispatcher(bot, storage=MemoryStorage())
-
 
 @dp.message_handler(commands=['start'])
 async def show_start(message: types.Message):
@@ -49,7 +50,12 @@ async def get_video(message: types.Message):
     # except NotImplementedError:
     #     workers = 1
     # pool = ProcessPoolExecutor(max_workers=workers)
-    await download_video(message.text, message.chat.id)
+    #await download_video(message.text, message.chat.id)
+
+    # !!! Call method allocate server
+    al = Allocate()
+    
+        await send_data(message.chat.id, message.text, al.get_server())
 
 
 if __name__ == '__main__':
