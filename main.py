@@ -7,13 +7,14 @@ import asyncio
 from config import *
 #from download import download_video
 import logging
-from send_data import send_data
+
+
 from allocate import Allocate
 
 from concurrent.futures import ProcessPoolExecutor, wait
 from multiprocessing import cpu_count
 logging.basicConfig(level=logging.INFO)
-
+al = Allocate()
 # Bot init
 bot = Bot(token=API_TOKEN, proxy=PROXY, parse_mode='HTML')
 
@@ -43,7 +44,7 @@ async def show_language(message: types.Message):
 @dp.message_handler()
 async def get_video(message: types.Message):
     await bot.send_message(message.chat.id, "Загрузка началась")
-    print("Next step")
+    print("Next step", message)
     # В другом месте сделать pool
     # try:
     #     workers = cpu_count()
@@ -53,9 +54,11 @@ async def get_video(message: types.Message):
     #await download_video(message.text, message.chat.id)
 
     # !!! Call method allocate server
-    al = Allocate()
-    
-        await send_data(message.chat.id, message.text, al.get_server())
+    srv = al.get_server()
+    if srv == "Queue":
+        al.add_to_queue({'id': message.chat.id, 'url': message.text})
+    else:
+        await al.send_to_server(message.chat.id, message.text, srv)
 
 
 if __name__ == '__main__':
